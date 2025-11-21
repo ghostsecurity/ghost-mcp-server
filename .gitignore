@@ -149,3 +149,7 @@ reports-output/
 .playwright-mcp/
 reports/
 
+# Project specific ignores
+GEMINI.md
+analyze-repos.ts
+test-*.ts

@@ -139,6 +139,18 @@ class GhostSecurityMCPServer {
                   items: { type: 'string' },
                   description: 'Specific fields to include in response (works with summary mode)',
                 },
+                status: {
+                  type: 'string',
+                  description: 'Filter by status',
+                },
+                repo_id: {
+                  type: 'string',
+                  description: 'Filter by repository ID',
+                },
+                project_id: {
+                  type: 'string',
+                  description: 'Filter by project ID',
+                },
               },
             },
           },
@@ -158,12 +170,24 @@ class GhostSecurityMCPServer {
                   enum: ['asc', 'desc'],
                   description: 'Sort order',
                 },
+                status: {
+                  type: 'string',
+                  description: 'Filter by status',
+                },
+                repo_id: {
+                  type: 'string',
+                  description: 'Filter by repository ID',
+                },
+                project_id: {
+                  type: 'string',
+                  description: 'Filter by project ID',
+                },
               },
             },
           },
           {
             name: 'ghostsecurity_get_finding',
-            description: 'Get a specific security finding by ID',
+            description: 'Get a specific security finding by ID (requires repository and project context)',
             inputSchema: {
               type: 'object',
               properties: {
@@ -171,8 +195,16 @@ class GhostSecurityMCPServer {
                   type: 'string',
                   description: 'Finding ID',
                 },
+                repoId: {
+                  type: 'string',
+                  description: 'Repository ID associated with the finding',
+                },
+                projectId: {
+                  type: 'string',
+                  description: 'Project ID associated with the finding',
+                },
               },
-              required: ['id'],
+              required: ['id', 'repoId', 'projectId'],
             },
           },
           {
@@ -185,12 +217,20 @@ class GhostSecurityMCPServer {
                   type: 'string',
                   description: 'Finding ID',
                 },
+                repoId: {
+                  type: 'string',
+                  description: 'Repository ID associated with the finding',
+                },
+                projectId: {
+                  type: 'string',
+                  description: 'Project ID associated with the finding',
+                },
                 status: {
                   type: 'string',
                   description: 'New status for the finding',
                 },
               },
-              required: ['id', 'status'],
+              required: ['id', 'repoId', 'projectId', 'status'],
             },
           },
           {
@@ -199,11 +239,6 @@ class GhostSecurityMCPServer {
             inputSchema: {
               type: 'object',
               properties: {
-                cast: {
-                  type: 'string',
-                  enum: ['supported', 'unsupported', 'all'],
-                  description: 'Filter by scanning support',
-                },
                 cursor: {
                   type: 'string',
                   description: 'Pagination cursor',
@@ -239,30 +274,6 @@ class GhostSecurityMCPServer {
                 },
               },
               required: ['id'],
-            },
-          },
-          {
-            name: 'ghostsecurity_get_repository_endpoints',
-            description: 'Get endpoints for a specific repository',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                repoId: {
-                  type: 'string',
-                  description: this.repositoryId ? 'Repository ID (optional, uses configured repo if not provided)' : 'Repository ID',
-                },
-                cursor: {
-                  type: 'string',
-                  description: 'Pagination cursor',
-                },
-                size: {
-                  type: 'number',
-                  minimum: 1,
-                  maximum: 1000,
-                  description: 'Page size (1-1000)',
-                },
-              },
-              required: this.repositoryId ? [] : ['repoId'],
             },
           },
           {
@@ -305,6 +316,10 @@ class GhostSecurityMCPServer {
                   items: { type: 'string' },
                   description: 'Specific fields to include in response (works with summary mode)',
                 },
+                status: {
+                  type: 'string',
+                  description: 'Filter by status',
+                },
               },
               required: this.repositoryId ? [] : ['repoId'],
             },
@@ -325,10 +340,10 @@ class GhostSecurityMCPServer {
             return await this.handleCountFindings(args as any);
 
           case 'ghostsecurity_get_finding':
-            return await this.handleGetFinding(args as { id: string });
+            return await this.handleGetFinding(args as { id: string; repoId: string; projectId: string });
 
           case 'ghostsecurity_update_finding_status':
-            return await this.handleUpdateFindingStatus(args as { id: string; status: string });
+            return await this.handleUpdateFindingStatus(args as { id: string; repoId: string; projectId: string; status: string });
 
           case 'ghostsecurity_get_repositories':
             return await this.handleGetRepositories(args as any);
@@ -336,12 +351,8 @@ class GhostSecurityMCPServer {
           case 'ghostsecurity_get_repository':
             return await this.handleGetRepository(args as { id: string });
 
-          case 'ghostsecurity_get_repository_endpoints':
-            return await this.handleGetRepositoryEndpoints(args as any);
-
           case 'ghostsecurity_get_repository_findings':
             return await this.handleGetRepositoryFindings(args as any);
-
 
           default:
             throw new McpError(
@@ -415,8 +426,8 @@ class GhostSecurityMCPServer {
     };
   }
 
-  private async handleGetFinding(args: { id: string }) {
-    const result = await this.client.getFinding(args.id);
+  private async handleGetFinding(args: { id: string; repoId: string; projectId: string }) {
+    const result = await this.client.getFinding(args.id, args.repoId, args.projectId);
 
     return {
       content: [
@@ -428,8 +439,12 @@ class GhostSecurityMCPServer {
     };
   }
 
-  private async handleUpdateFindingStatus(args: { id: string; status: string }) {
-    const result = await this.client.updateFindingStatus(args.id, { user_status: args.status });
+  private async handleUpdateFindingStatus(args: { id: string; repoId: string; projectId: string; status: string }) {
+    const result = await this.client.updateFindingStatus(args.id, { 
+      user_status: args.status,
+      repo_id: args.repoId,
+      project_id: args.projectId
+    });
 
     return {
       content: [
@@ -470,30 +485,6 @@ class GhostSecurityMCPServer {
 
   private async handleGetRepository(args: { id: string }) {
     const result = await this.client.getRepository(args.id);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: this.formatResponse(result),
-        },
-      ],
-    };
-  }
-
-  private async handleGetRepositoryEndpoints(args: any) {
-    // Use configured repository ID if available, otherwise use provided repoId
-    const repoId = this.repositoryId || args.repoId;
-    
-    if (!repoId) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        'Repository ID is required. Provide repoId parameter or configure GHOST_SECURITY_REPO_ID.'
-      );
-    }
-    
-    const { repoId: _, ...params } = args;
-    const result = await this.client.getRepositoryEndpoints(repoId, params);
 
     return {
       content: [

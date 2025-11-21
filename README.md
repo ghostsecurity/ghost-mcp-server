@@ -14,6 +14,77 @@ A Model Context Protocol (MCP) server for the Ghost Security API, providing secu
 
 ## Installation
 
+### Quick Install for Claude Code CLI
+
+**Option 1: Interactive Installer (Easiest)**
+
+```bash
+# Clone and build
+git clone https://github.com/ghostsecurity/ghost-mcp-server
+cd ghost-mcp-server
+npm install && npm run build
+
+# Run interactive installer (prompts for API key)
+npm run install:interactive
+```
+
+**Option 2: Automated Setup Script**
+
+```bash
+# Clone and build
+git clone https://github.com/ghostsecurity/ghost-mcp-server
+cd ghost-mcp-server
+npm install && npm run build
+
+# Run setup script with your API key
+./setup-claude-code.sh YOUR_API_KEY
+
+# Optional: Scope to a specific repository
+./setup-claude-code.sh YOUR_API_KEY YOUR_REPO_ID
+```
+
+**Option 3: Manual Setup**
+
+```bash
+# Clone and build
+git clone https://github.com/ghostsecurity/ghost-mcp-server
+cd ghost-mcp-server
+npm install && npm run build
+
+# Add to Claude Code
+claude mcp add --transport stdio --scope user ghost-security -- node $(pwd)/dist/index.js
+
+# Then edit ~/.claude.json and add under mcpServers.ghost-security.env:
+# {
+#   "GHOST_SECURITY_API_KEY": "your-api-key",
+#   "GHOST_SECURITY_BASE_URL": "https://api.ghostsecurity.ai/v2"
+# }
+```
+
+**Option 4: From npm (Coming Soon)**
+
+Once published to npm, installation will be even simpler:
+
+```bash
+claude mcp add --transport stdio --scope user ghost-security -- npx ghostsecurity-mcp
+```
+
+Then add your API key to `~/.claude.json`:
+```json
+{
+  "mcpServers": {
+    "ghost-security": {
+      "env": {
+        "GHOST_SECURITY_API_KEY": "your-api-key-here",
+        "GHOST_SECURITY_BASE_URL": "https://api.ghostsecurity.ai/v2"
+      }
+    }
+  }
+}
+```
+
+### Standard Installation (All MCP Clients)
+
 1. Clone this repository:
 ```bash
 git clone <repository-url>

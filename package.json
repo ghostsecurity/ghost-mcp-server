@@ -5,12 +5,26 @@
   "description": "Minimal MCP server for Ghost Security API - compatible with all MCP clients",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "ghostsecurity-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "server.json",
+    "install.js",
+    "setup-claude-code.sh",
+    ".env.example"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
+    "install:interactive": "node install.js",
     "chat": "tsx src/chatbot.ts",
     "test": "vitest run",
+    "test:connection": "node dist/index.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write ."
   },

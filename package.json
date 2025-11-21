@@ -1,6 +1,7 @@
 {
   "name": "ghostsecurity-mcp",
   "version": "1.0.0",
+  "mcpName": "io.github.ghostsecurity/ghost-mcp-server",
   "description": "Minimal MCP server for Ghost Security API - compatible with all MCP clients",
   "main": "dist/index.js",
   "type": "module",

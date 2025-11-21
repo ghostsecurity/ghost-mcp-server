@@ -29,6 +29,7 @@ export class GhostSecurityClient {
       headers: {
         'Authorization': `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
+        'User-Agent': 'ghost-mcp-server',
         ...options.headers,
       },
     });

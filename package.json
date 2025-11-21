@@ -8,6 +8,7 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
+    "chat": "tsx src/chatbot.ts",
     "test": "vitest run",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write ."
@@ -28,6 +29,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.1",
     "@modelcontextprotocol/sdk": "^0.6.0"
   },
   "devDependencies": {

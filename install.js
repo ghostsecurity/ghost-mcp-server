@@ -58,7 +58,7 @@ async function main() {
 
   // Prompt for API key
   log('Enter your Ghost Security API key:', colors.bright);
-  log('(Get your API key from https://app.ghostsecurity.ai/settings/api)', colors.blue);
+  log('(Get your API key from https://app.ghostsecurity.ai/integrations/keys)', colors.blue);
   const apiKey = await question('API Key: ');
 
   if (!apiKey || !apiKey.trim()) {

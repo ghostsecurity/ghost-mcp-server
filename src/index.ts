@@ -208,8 +208,8 @@ class GhostSecurityMCPServer {
             },
           },
           {
-            name: 'ghostsecurity_update_finding_status',
-            description: 'Update the status of a security finding',
+            name: 'ghostsecurity_update_finding',
+            description: 'Update a security finding (status and/or comments). At least one of status or comments must be provided.',
             inputSchema: {
               type: 'object',
               properties: {
@@ -227,10 +227,16 @@ class GhostSecurityMCPServer {
                 },
                 status: {
                   type: 'string',
-                  description: 'New status for the finding',
+                  enum: ['active', 'muted', 'open'],
+                  description: 'New user_status for the finding',
+                },
+                comments: {
+                  type: 'string',
+                  maxLength: 512,
+                  description: 'Comments on the finding (0-512 chars). Send empty string to clear.',
                 },
               },
-              required: ['id', 'repoId', 'projectId', 'status'],
+              required: ['id', 'repoId', 'projectId'],
             },
           },
           {
@@ -342,8 +348,8 @@ class GhostSecurityMCPServer {
           case 'ghostsecurity_get_finding':
             return await this.handleGetFinding(args as { id: string; repoId: string; projectId: string });
 
-          case 'ghostsecurity_update_finding_status':
-            return await this.handleUpdateFindingStatus(args as { id: string; repoId: string; projectId: string; status: string });
+          case 'ghostsecurity_update_finding':
+            return await this.handleUpdateFinding(args as { id: string; repoId: string; projectId: string; status?: string; comments?: string });
 
           case 'ghostsecurity_get_repositories':
             return await this.handleGetRepositories(args as any);
@@ -439,12 +445,40 @@ class GhostSecurityMCPServer {
     };
   }
 
-  private async handleUpdateFindingStatus(args: { id: string; repoId: string; projectId: string; status: string }) {
-    const result = await this.client.updateFindingStatus(args.id, { 
-      user_status: args.status,
+  private async handleUpdateFinding(args: { id: string; repoId: string; projectId: string; status?: string; comments?: string }) {
+    if (args.status === undefined && args.comments === undefined) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        'At least one of status or comments must be provided'
+      );
+    }
+
+    if (args.status && !['active', 'muted', 'open'].includes(args.status)) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        'status must be one of: active, muted, open'
+      );
+    }
+
+    if (args.comments !== undefined && args.comments.length > 512) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        'comments must be 0-512 characters'
+      );
+    }
+
+    const request: any = {
       repo_id: args.repoId,
-      project_id: args.projectId
-    });
+      project_id: args.projectId,
+    };
+    if (args.status !== undefined) {
+      request.user_status = args.status;
+    }
+    if (args.comments !== undefined) {
+      request.comments = args.comments;
+    }
+
+    const result = await this.client.updateFinding(args.id, request);
 
     return {
       content: [

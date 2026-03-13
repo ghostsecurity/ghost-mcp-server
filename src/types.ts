@@ -164,8 +164,11 @@ export interface RepositoriesQueryParams {
   size?: number;
 }
 
-export interface UpdateFindingStatusRequest {
-  user_status: string;
+export type UserStatus = 'active' | 'muted' | 'open';
+
+export interface UpdateFindingRequest {
+  user_status?: UserStatus;
+  comments?: string;
   repo_id: string;
   project_id: string;
 }

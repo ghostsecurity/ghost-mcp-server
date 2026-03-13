@@ -5,7 +5,7 @@ import {
   PaginatedResponse,
   FindingsQueryParams,
   RepositoriesQueryParams,
-  UpdateFindingStatusRequest,
+  UpdateFindingRequest,
   GhostSecurityConfig,
   ResponseMode,
   CountResponse,
@@ -299,7 +299,7 @@ export class GhostSecurityClient {
     return this.makeRequest<Finding>(`/repos/${repoId}/projects/${projectId}/findings/${id}`);
   }
 
-  async updateFindingStatus(id: string, request: UpdateFindingStatusRequest): Promise<Finding> {
+  async updateFinding(id: string, request: UpdateFindingRequest): Promise<Finding> {
     return this.makeRequest<Finding>(`/findings/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(request),
